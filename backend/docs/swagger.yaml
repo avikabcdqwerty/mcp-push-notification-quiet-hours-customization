@@ -1,0 +1,189 @@
+openapi: 3.0.3
+info:
+  title: MCP Quiet Hours API
+  description: API for managing user quiet hour settings for push notifications.
+  version: 1.0.0
+servers:
+  - url: /api
+tags:
+  - name: QuietHours
+    description: Manage user quiet hour settings
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    QuietHourPeriod:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          example: "22:00"
+          description: Start time in HH:mm (24-hour) format
+        endTime:
+          type: string
+          example: "07:00"
+          description: End time in HH:mm (24-hour) format
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    QuietHourInput:
+      type: object
+      required:
+        - startTime
+        - endTime
+      properties:
+        startTime:
+          type: string
+          example: "22:00"
+          description: Start time in HH:mm (24-hour) format
+        endTime:
+          type: string
+          example: "07:00"
+          description: End time in HH:mm (24-hour) format
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+security:
+  - bearerAuth: []
+
+paths:
+  /quiet-hours:
+    get:
+      tags:
+        - QuietHours
+      summary: Get all quiet hour periods for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of quiet hour periods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuietHourPeriod"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - QuietHours
+      summary: Create a new quiet hour period
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuietHourInput"
+      responses:
+        "201":
+          description: Quiet hour period created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuietHourPeriod"
+        "400":
+          description: Invalid input or overlapping period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quiet-hours/{id}:
+    put:
+      tags:
+        - QuietHours
+      summary: Update an existing quiet hour period
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuietHourInput"
+      responses:
+        "200":
+          description: Quiet hour period updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuietHourPeriod"
+        "400":
+          description: Invalid input or overlapping period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Quiet hour period not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - QuietHours
+      summary: Delete a quiet hour period
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Quiet hour period deleted
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Quiet hour period not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
